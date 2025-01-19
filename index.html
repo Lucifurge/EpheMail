@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TemporaMail - Temporary Email Service</title>
+  <title>TemporaMail</title>
   <style>
-    /* Reset */
+    /* Styling for Visual Studio-inspired design */
     * {
       margin: 0;
       padding: 0;
@@ -115,7 +115,7 @@
 
         const account = {
           address: `user@${domain}`,
-          password: "SecurePassword123!",
+          password: "Password123!",
         };
 
         const createResponse = await fetch(`${API_BASE}/accounts`, {
@@ -126,10 +126,8 @@
 
         if (createResponse.status === 422) {
           throw new Error("Invalid email address or password.");
-        } else if (createResponse.status === 429) {
-          throw new Error("Too many requests. Please try again later.");
         } else if (!createResponse.ok) {
-          throw await createResponse.json();
+          throw new Error("Failed to create account.");
         }
 
         const accountData = await createResponse.json();
@@ -141,7 +139,7 @@
           body: JSON.stringify(account),
         });
 
-        if (!tokenResponse.ok) throw await tokenResponse.json();
+        if (!tokenResponse.ok) throw new Error("Failed to get token.");
 
         const tokenData = await tokenResponse.json();
         token = tokenData.token;
@@ -174,7 +172,7 @@
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) throw await response.json();
+        if (!response.ok) throw new Error("Failed to fetch messages.");
 
         const messages = await response.json();
         const messageList = messages["hydra:member"]
@@ -197,7 +195,7 @@
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.status !== 204) throw await response.json();
+        if (response.status !== 204) throw new Error("Failed to delete account.");
 
         token = null;
         accountId = null;
