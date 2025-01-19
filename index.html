@@ -1,200 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TempMail - Temporary Email Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    /* Global Styles */
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-    }
-
-    /* Navbar */
-    .navbar {
-      width: 100%;
-      padding: 15px;
-      background: #252526;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-    .navbar h1 {
-      color: #569cd6;
-      font-family: 'Source Code Pro', monospace;
-      margin: 0;
-      text-shadow: 0 0 10px #569cd6;
-    }
-    .navbar button {
-      background-color: #3c3c3c;
-      border: 1px solid #569cd6;
-      padding: 10px 20px;
-      color: #dcdcaa;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    .navbar button:hover {
-      background-color: #569cd6;
-      color: white;
-      box-shadow: 0 0 15px #569cd6;
-    }
-
-    /* Content */
-    .container {
-      width: 100%;
-      max-width: 1000px;
-      padding: 20px;
-      margin-top: 20px;
-      text-align: center;
-    }
-    .section-title {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      color: #569cd6;
-    }
-
-    .output {
-      background: #252526;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      color: #9cdcfe;
-      font-family: 'Source Code Pro', monospace;
-      margin-top: 20px;
-      min-height: 100px;
-    }
-
-    /* Email List Styles */
-    .email-list {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-    .email-item {
-      background: #2a2a2a;
-      border-radius: 8px;
-      padding: 15px;
-      transition: 0.3s;
-      cursor: pointer;
-    }
-    .email-item:hover {
-      background-color: #569cd6;
-      box-shadow: 0 0 15px #569cd6;
-    }
-    .email-item h3 {
-      color: #dcdcaa;
-      font-size: 1.1rem;
-    }
-    .email-item p {
-      color: #c8c8c8;
-      font-size: 0.9rem;
-    }
-
-    /* Animation */
-    @keyframes glowing {
-      0% { text-shadow: 0 0 5px #569cd6, 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6; }
-      50% { text-shadow: 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6, 0 0 40px #569cd6; }
-      100% { text-shadow: 0 0 5px #569cd6, 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6; }
-    }
-    .neon-text {
-      animation: glowing 1.5s infinite alternate;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp Mail Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f; /* Visual Studio Blue */
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #2b2b44;
+            padding: 30px;
+            border-radius: 8px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: #4f99fb; /* Light Blue color */
+        }
+        input, button {
+            width: 85%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #444;
+            outline: none;
+            background-color: #3a3a59;
+            color: white;
+        }
+        button {
+            background-color: #4f99fb; /* Blue color for buttons */
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4079c2;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #373757;
+            border-radius: 6px;
+        }
+        .email-list {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #373757;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .email-item {
+            margin: 10px 0;
+            background-color: #2b2b44;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .email-item button {
+            margin-left: 10px;
+            background-color: #d93d3d;
+        }
+        .email-item button:hover {
+            background-color: #c82b2b;
+        }
+    </style>
 </head>
 <body>
-  <div class="navbar">
-    <h1 class="neon-text">TempMail</h1>
-    <div>
-      <button id="createEmailBtn">Generate Temporary Email</button>
-      <button id="inboxBtn">Inbox</button>
+    <div class="container">
+        <h1>Temp Mail Service</h1>
+        <button onclick="generateEmail()">Generate Temporary Email</button>
+        <div id="email-container" class="info"></div>
+
+        <button onclick="fetchMessages()">Fetch Messages</button>
+        <div id="messages-container" class="email-list"></div>
+
+        <button onclick="fetchDomains()">Get Available Domains</button>
+        <div id="domains-container" class="info"></div>
     </div>
-  </div>
 
-  <div class="container">
-    <h2 class="section-title">Welcome to TempMail</h2>
-    <div id="content"></div>
-    <div id="output" class="output">Output will appear here...</div>
-  </div>
+    <script>
+        const apiBase = "http://api.temp-mail.org/request";
+        let emailAddress = '';
 
-  <script>
-    const apiBaseUrl = "https://eppheapi-production.up.railway.app/api"; // Your deployed API URL
-    const outputDiv = document.getElementById('output');
-    const contentDiv = document.getElementById('content');
-    
-    // Generate Temporary Email
-    document.getElementById('createEmailBtn').addEventListener('click', async () => {
-      outputDiv.innerHTML = 'Generating a temporary email...';
-      try {
-        const response = await fetch(`${apiBaseUrl}/create-email`);
-        const data = await response.json();
-        const email = data.email;
-        outputDiv.innerHTML = `Temporary Email Created: <strong>${email}</strong>`;
-      } catch (error) {
-        outputDiv.innerHTML = `Error: ${error.message}`;
-      }
-    });
+        // Function to generate a new temporary email address
+        async function generateEmail() {
+            try {
+                const response = await fetch(`${apiBase}/mail/id/md5/`);
+                const data = await response.json();
+                emailAddress = data.mail_address;
+                document.getElementById('email-container').innerHTML = `
+                    <p>Temporary Email: <strong>${emailAddress}</strong></p>
+                    <button onclick="fetchMessages()">Fetch Emails for ${emailAddress}</button>
+                `;
+            } catch (error) {
+                console.error('Error generating email:', error);
+            }
+        }
 
-    // Fetch Inbox
-    document.getElementById('inboxBtn').addEventListener('click', async () => {
-      outputDiv.innerHTML = 'Loading inbox...';
-      try {
-        const response = await fetch(`${apiBaseUrl}/emails`);
-        const emails = await response.json();
-        
-        contentDiv.innerHTML = '<h3>Inbox</h3>';
-        const emailList = document.createElement('div');
-        emailList.classList.add('email-list');
-        
-        emails.forEach(email => {
-          const emailItem = document.createElement('div');
-          emailItem.classList.add('email-item');
-          emailItem.innerHTML = `
-            <h3>${email.subject}</h3>
-            <p>From: ${email.sender}</p>
-            <p>Preview: ${email.preview}</p>
-          `;
-          emailItem.addEventListener('click', () => showEmailDetails(email.id));
-          emailList.appendChild(emailItem);
-        });
-        
-        contentDiv.appendChild(emailList);
-        outputDiv.innerHTML = 'Inbox loaded successfully!';
-      } catch (error) {
-        outputDiv.innerHTML = `Error: ${error.message}`;
-      }
-    });
+        // Function to fetch messages for the generated email address
+        async function fetchMessages() {
+            if (!emailAddress) {
+                alert("Please generate an email first!");
+                return;
+            }
 
-    // Show Email Details
-    const showEmailDetails = async (emailId) => {
-      outputDiv.innerHTML = 'Loading email details...';
-      try {
-        const response = await fetch(`${apiBaseUrl}/email/${emailId}`);
-        const email = await response.json();
-        
-        contentDiv.innerHTML = `
-          <h3>${email.subject}</h3>
-          <p><strong>From:</strong> ${email.sender}</p>
-          <p><strong>Body:</strong> ${email.body}</p>
-        `;
-        
-        outputDiv.innerHTML = 'Email details loaded successfully!';
-      } catch (error) {
-        outputDiv.innerHTML = `Error: ${error.message}`;
-      }
-    };
-  </script>
+            const emailHash = md5(emailAddress);
+            try {
+                const response = await fetch(`${apiBase}/mail/id/${emailHash}/format/json/`);
+                const messages = await response.json();
+
+                if (messages.length === 0) {
+                    document.getElementById('messages-container').innerHTML = "No messages found!";
+                } else {
+                    const messageList = messages.map(msg => `
+                        <div class="email-item">
+                            <strong>From:</strong> ${msg.mail_from} <br>
+                            <strong>Subject:</strong> ${msg.mail_subject} <br>
+                            <button onclick="viewMessage('${msg.mail_id}')">View</button>
+                            <button onclick="deleteMessage('${msg.mail_id}')">Delete</button>
+                        </div>
+                    `).join('');
+                    document.getElementById('messages-container').innerHTML = messageList;
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        }
+
+        // Function to view the content of a specific message
+        async function viewMessage(mailId) {
+            try {
+                const response = await fetch(`${apiBase}/source/id/${mailId}/`);
+                const data = await response.json();
+                alert(`Message Content: \n\n${data.mail_text}`);
+            } catch (error) {
+                console.error('Error viewing message:', error);
+            }
+        }
+
+        // Function to delete a specific email by its mail_id
+        async function deleteMessage(mailId) {
+            try {
+                const response = await fetch(`${apiBase}/delete/id/${mailId}/`);
+                const data = await response.json();
+                alert('Message deleted successfully!');
+                fetchMessages(); // Refresh the message list
+            } catch (error) {
+                console.error('Error deleting message:', error);
+            }
+        }
+
+        // Function to fetch available domains for generating email addresses
+        async function fetchDomains() {
+            try {
+                const response = await fetch(`${apiBase}/domains/`);
+                const domains = await response.json();
+                const domainList = domains.map(domain => `
+                    <p><strong>Domain:</strong> ${domain}</p>
+                `).join('');
+                document.getElementById('domains-container').innerHTML = domainList;
+            } catch (error) {
+                console.error('Error fetching domains:', error);
+            }
+        }
+
+        // Function to generate MD5 hash (needed for request)
+        function md5(string) {
+            return crypto.createHash('md5').update(string).digest('hex');
+        }
+    </script>
 </body>
 </html>
