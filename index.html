@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mail.tm Integration</title>
+    <title>Mail.tm API Integration</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,6 +55,7 @@
             try {
                 const response = await fetch(`${apiUrl}/domains`);
                 const data = await response.json();
+                
                 if (data['hydra:member'].length > 0) {
                     selectedDomain = data['hydra:member'][0].domain;
                     displayMessage(`Domain selected: ${selectedDomain}`);
@@ -73,6 +74,7 @@
                 return;
             }
 
+            // Ensure the email format is correct
             const email = `user@${selectedDomain}`;
             const password = 'randompassword'; // Use a static password for demo purposes
 
@@ -86,23 +88,46 @@
                 });
 
                 const data = await response.json();
-                if (data.token) {
-                    token = data.token;
+                
+                if (response.status === 201 && data.id) {
                     accountId = data.id;
                     displayMessage(`Account created: ${email}`);
-                    displayMessage(`Token: ${token}`);
+                    authenticateAccount(data.address, password);  // Authenticate to get the token
                 } else {
-                    displayMessage('Account creation failed.');
+                    displayMessage('Account creation failed: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
                 displayMessage('Error creating account: ' + error.message);
             }
         }
 
+        // Function to authenticate and get token
+        async function authenticateAccount(email, password) {
+            try {
+                const response = await fetch(`${apiUrl}/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ address: email, password })
+                });
+
+                const data = await response.json();
+                if (data.token) {
+                    token = data.token;
+                    displayMessage('Authenticated! Token: ' + token);
+                } else {
+                    displayMessage('Authentication failed.');
+                }
+            } catch (error) {
+                displayMessage('Error during authentication: ' + error.message);
+            }
+        }
+
         // Function to get messages from the created account
         async function getMessages() {
             if (!token) {
-                displayMessage('Please create an account first.');
+                displayMessage('Please create an account and authenticate first.');
                 return;
             }
 
@@ -134,30 +159,6 @@
             outputDiv.innerHTML += `<p>${message}</p>`;
         }
 
-        // Function to delete an account (optional)
-        async function deleteAccount() {
-            if (!accountId) {
-                displayMessage('Please create an account first.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiUrl}/accounts/${accountId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.status === 204) {
-                    displayMessage('Account deleted successfully.');
-                } else {
-                    displayMessage('Failed to delete account.');
-                }
-            } catch (error) {
-                displayMessage('Error deleting account: ' + error.message);
-            }
-        }
     </script>
 
 </body>
