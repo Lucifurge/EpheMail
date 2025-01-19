@@ -1,152 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temporary Email Service</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <title>Mail.tm Integration</title>
     <style>
-        /* Monkai Dark Theme */
         body {
-            background-color: #2d2d2d;
-            color: #c5c8c6;
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: white;
             padding: 20px;
         }
-
-        h1, h2 {
-            color: #c5c8c6;
-        }
-
         button {
-            background-color: #4a90e2;
+            background-color: #007BFF;
             border: none;
-            border-radius: 5px;
-            padding: 12px 20px;
-            color: #fff;
-            font-size: 16px;
+            padding: 10px;
+            color: white;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
-
         button:hover {
-            background-color: #357ab7;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transform: scale(1.05);
+            background-color: #0056b3;
         }
-
-        button:active {
-            background-color: #2e6a97;
-        }
-
         .output {
             margin-top: 20px;
-            background-color: #333;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            background-color: #444;
+            padding: 10px;
+            border-radius: 5px;
         }
-
-        .output p {
-            word-wrap: break-word;
-        }
-
-        .output a {
-            color: #4a90e2;
-            text-decoration: none;
-        }
-
-        .output a:hover {
-            text-decoration: underline;
-        }
-
-        .loading {
-            color: #e6e6e6;
-            font-size: 18px;
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50%, 100% {
-                opacity: 1;
-            }
-            25%, 75% {
-                opacity: 0;
-            }
+        a {
+            color: #007BFF;
         }
     </style>
 </head>
-
 <body>
 
-    <h1>Temporary Email Service</h1>
-    <p class="loading">Loading...</p>
+    <h1>Mail.tm API Integration</h1>
+
+    <button onclick="fetchDomains()">Get Domains</button>
+    <button onclick="createAccount()">Create Account</button>
+    <button onclick="getMessages()">Get Messages</button>
 
     <div class="output" id="output"></div>
 
     <script>
-        const puts = (...args) => {
-            const outputDiv = document.getElementById('output');
-            outputDiv.innerHTML += `<p>${args.join(" ")}</p>`;
-        };
+        const apiUrl = 'https://api.mail.tm'; // Base URL for Mail.tm API
+        let token = ''; // Store the Bearer token
+        let accountId = ''; // Store the account ID
+        let selectedDomain = ''; // Store the selected domain
 
-        const apiUrl = "https://eppheapi-production.up.railway.app/"; // Your API URL
+        // Function to fetch available domains
+        async function fetchDomains() {
+            try {
+                const response = await fetch(`${apiUrl}/domains`);
+                const data = await response.json();
+                if (data['hydra:member'].length > 0) {
+                    selectedDomain = data['hydra:member'][0].domain;
+                    displayMessage(`Domain selected: ${selectedDomain}`);
+                } else {
+                    displayMessage('No domains available.');
+                }
+            } catch (error) {
+                displayMessage('Error fetching domains: ' + error.message);
+            }
+        }
 
-        let username = "";
-
+        // Function to create a temporary email account
         async function createAccount() {
-            puts("[1/4] An account is being created...");
+            if (!selectedDomain) {
+                displayMessage('Please fetch domains first.');
+                return;
+            }
+
+            const email = `user@${selectedDomain}`;
+            const password = 'randompassword'; // Use a static password for demo purposes
 
             try {
-                const res = await fetch(`${apiUrl}/create-account`, { method: 'POST' });
-                const data = await res.json();
-                if (!data.status) throw new Error(data.message);
-                username = data.data.username;
-                puts("[2/4] Account created. Please check your email inbox.");
+                const response = await fetch(`${apiUrl}/accounts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ address: email, password })
+                });
 
-                listenForNewMessage();
-            } catch (err) {
-                puts("[Error]", err.message);
+                const data = await response.json();
+                if (data.token) {
+                    token = data.token;
+                    accountId = data.id;
+                    displayMessage(`Account created: ${email}`);
+                    displayMessage(`Token: ${token}`);
+                } else {
+                    displayMessage('Account creation failed.');
+                }
+            } catch (error) {
+                displayMessage('Error creating account: ' + error.message);
             }
         }
 
-        function listenForNewMessage() {
-            puts("[3/4] A new mail is expected to arrive.");
-            puts("[3/4]", 'Go to this site: <a href="https://sendtestemail.com/" target="_blank">sendtestemail.com</a> type this address:', `<strong>${username}</strong>`);
+        // Function to get messages from the created account
+        async function getMessages() {
+            if (!token) {
+                displayMessage('Please create an account first.');
+                return;
+            }
 
-            // Event listener for new message
-            const eventSource = new EventSource(`${apiUrl}/listen/${username}`);
+            try {
+                const response = await fetch(`${apiUrl}/messages`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-            eventSource.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                puts("[4/4] New message received:", JSON.stringify(message, null, 2));
-
-                // Stop listening and delete account
-                eventSource.close();
-                deleteAccount();
-            };
+                const data = await response.json();
+                if (data['hydra:member'].length > 0) {
+                    displayMessage('Messages received:');
+                    data['hydra:member'].forEach(msg => {
+                        displayMessage(`From: ${msg.from.address}, Subject: ${msg.subject}`);
+                    });
+                } else {
+                    displayMessage('No messages found.');
+                }
+            } catch (error) {
+                displayMessage('Error fetching messages: ' + error.message);
+            }
         }
 
+        // Function to display messages in the output div
+        function displayMessage(message) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML += `<p>${message}</p>`;
+        }
+
+        // Function to delete an account (optional)
         async function deleteAccount() {
-            puts("[5/5] Deleting account...");
+            if (!accountId) {
+                displayMessage('Please create an account first.');
+                return;
+            }
 
             try {
-                const res = await fetch(`${apiUrl}/delete-account/${username}`, { method: 'DELETE' });
-                const data = await res.json();
-                if (!data.status) throw new Error(data.message);
-                puts("[5/5] Account deleted successfully.");
-            } catch (err) {
-                puts("[Error]", err.message);
+                const response = await fetch(`${apiUrl}/accounts/${accountId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 204) {
+                    displayMessage('Account deleted successfully.');
+                } else {
+                    displayMessage('Failed to delete account.');
+                }
+            } catch (error) {
+                displayMessage('Error deleting account: ' + error.message);
             }
         }
-
-        // Automatically create an account when the page loads
-        window.onload = () => createAccount();
     </script>
 
 </body>
-
 </html>
