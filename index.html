@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TemporaMail</title>
   <style>
-    /* Styling for Visual Studio-inspired design */
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -16,87 +16,127 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #1e1e1e;
       color: #d4d4d4;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #252526;
+      padding: 10px 20px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      height: 100vh;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .navbar h1 {
+      color: #569cd6;
+      font-size: 1.5rem;
+    }
+
+    .navbar button {
+      background: #3c3c3c;
+      color: #dcdcaa;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .navbar button:hover {
+      background: #569cd6;
+      color: white;
     }
 
     .container {
-      width: 400px;
-      background: #252526;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
-    }
-
-    header h1 {
-      font-size: 1.8rem;
-      text-align: center;
-      color: #569cd6;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px #569cd6;
-    }
-
-    .button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      background: #3c3c3c;
-      color: #dcdcaa;
-      border: 2px solid #3a3d41;
-      border-radius: 5px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .button:hover {
-      background: #569cd6;
-      color: #fff;
-      box-shadow: 0 0 15px #569cd6, 0 0 20px #569cd6;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .output {
-      margin-top: 15px;
-      padding: 10px;
-      background: #1e1e1e;
-      border: 1px solid #3a3d41;
+      margin-top: 20px;
+      background: #252526;
       border-radius: 5px;
-      height: 120px;
-      overflow-y: auto;
-      font-size: 0.9rem;
+      padding: 15px;
       color: #9cdcfe;
+      font-family: monospace;
+      overflow-y: auto;
+      height: 300px;
     }
 
-    .error {
+    .output.error {
       color: red;
+    }
+
+    /* Buttons */
+    .action-button {
+      background: #3c3c3c;
+      color: #dcdcaa;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    .action-button:hover {
+      background: #569cd6;
+      color: white;
+    }
+
+    /* Table for Inbox */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #3a3d41;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #3a3d41;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>TemporaMail</h1>
-    </header>
+  <div class="navbar">
+    <h1>TemporaMail</h1>
     <div>
-      <div class="button" id="createAccount">Create Account</div>
-      <div class="button" id="getDomains">Get Domains</div>
-      <div class="button" id="listMessages">List Messages</div>
-      <div class="button" id="deleteAccount">Delete Account</div>
+      <button id="createAccount">Create Account</button>
+      <button id="viewInbox">Inbox</button>
+      <button id="accountDetails">Account</button>
+      <button id="deleteAccount">Delete Account</button>
     </div>
-    <div class="output" id="output">Output will appear here...</div>
+  </div>
+
+  <div class="container">
+    <h2 id="sectionTitle">Welcome to TemporaMail</h2>
+    <div id="sectionContent">
+      <p>Select an action from the navbar to get started.</p>
+    </div>
+    <div class="output" id="output">Logs and errors will appear here...</div>
   </div>
 
   <script>
     const API_BASE = "https://api.mail.tm";
     let token = null;
     let accountId = null;
+    let emailAddress = null;
 
+    const sectionTitle = document.getElementById("sectionTitle");
+    const sectionContent = document.getElementById("sectionContent");
     const output = document.getElementById("output");
 
     const displayOutput = (message, isError = false) => {
-      output.innerHTML = `<span class="${isError ? 'error' : ''}">${message}</span>`;
+      output.textContent = message;
+      output.classList.toggle("error", isError);
     };
 
     const handleError = (error) => {
@@ -105,6 +145,7 @@
 
     // Create Account
     document.getElementById("createAccount").addEventListener("click", async () => {
+      sectionTitle.textContent = "Create Account";
       try {
         const response = await fetch(`${API_BASE}/domains`);
         if (!response.ok) throw new Error("Failed to fetch domains.");
@@ -124,14 +165,11 @@
           body: JSON.stringify(account),
         });
 
-        if (createResponse.status === 422) {
-          throw new Error("Invalid email address or password.");
-        } else if (!createResponse.ok) {
-          throw new Error("Failed to create account.");
-        }
+        if (!createResponse.ok) throw new Error("Failed to create account.");
 
         const accountData = await createResponse.json();
         accountId = accountData.id;
+        emailAddress = account.address;
 
         const tokenResponse = await fetch(`${API_BASE}/token`, {
           method: "POST",
@@ -144,30 +182,19 @@
         const tokenData = await tokenResponse.json();
         token = tokenData.token;
 
-        displayOutput(`Account created: ${account.address}`);
+        sectionContent.innerHTML = `<p>Account created successfully:</p>
+          <p>Email: <strong>${emailAddress}</strong></p>`;
+        displayOutput("Account created and authenticated successfully!");
       } catch (error) {
         handleError(error);
       }
     });
 
-    // Get Domains
-    document.getElementById("getDomains").addEventListener("click", async () => {
-      try {
-        const response = await fetch(`${API_BASE}/domains`);
-        if (!response.ok) throw new Error("Failed to fetch domains.");
-        const data = await response.json();
-        const domains = data["hydra:member"].map((domain) => domain.domain).join(", ");
-        displayOutput(`Available domains: ${domains}`);
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    // List Messages
-    document.getElementById("listMessages").addEventListener("click", async () => {
+    // View Inbox
+    document.getElementById("viewInbox").addEventListener("click", async () => {
+      sectionTitle.textContent = "Inbox";
       try {
         if (!token) throw new Error("Please create an account first.");
-
         const response = await fetch(`${API_BASE}/messages`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -175,11 +202,50 @@
         if (!response.ok) throw new Error("Failed to fetch messages.");
 
         const messages = await response.json();
-        const messageList = messages["hydra:member"]
-          .map((msg) => `From: ${msg.from.address}, Subject: ${msg.subject}`)
-          .join("<br>");
+        const messageList = messages["hydra:member"];
+        if (!messageList.length) {
+          sectionContent.innerHTML = "<p>No messages found.</p>";
+          return;
+        }
 
-        displayOutput(messageList || "No messages found.");
+        let table = `<table>
+          <tr>
+            <th>From</th>
+            <th>Subject</th>
+            <th>Received At</th>
+          </tr>`;
+        messageList.forEach((msg) => {
+          table += `
+            <tr>
+              <td>${msg.from.address}</td>
+              <td>${msg.subject}</td>
+              <td>${new Date(msg.createdAt).toLocaleString()}</td>
+            </tr>`;
+        });
+        table += "</table>";
+        sectionContent.innerHTML = table;
+        displayOutput("Inbox loaded successfully!");
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    // View Account Details
+    document.getElementById("accountDetails").addEventListener("click", async () => {
+      sectionTitle.textContent = "Account Details";
+      try {
+        if (!token) throw new Error("Please create an account first.");
+        const response = await fetch(`${API_BASE}/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch account details.");
+
+        const account = await response.json();
+        sectionContent.innerHTML = `<p>Email: <strong>${account.address}</strong></p>
+          <p>Quota: ${account.quota}</p>
+          <p>Used: ${account.used}</p>`;
+        displayOutput("Account details loaded successfully!");
       } catch (error) {
         handleError(error);
       }
@@ -187,6 +253,7 @@
 
     // Delete Account
     document.getElementById("deleteAccount").addEventListener("click", async () => {
+      sectionTitle.textContent = "Delete Account";
       try {
         if (!token || !accountId) throw new Error("No account to delete.");
 
@@ -199,7 +266,10 @@
 
         token = null;
         accountId = null;
-        displayOutput("Account deleted successfully.");
+        emailAddress = null;
+
+        sectionContent.innerHTML = "<p>Account deleted successfully.</p>";
+        displayOutput("Account deleted successfully!");
       } catch (error) {
         handleError(error);
       }
