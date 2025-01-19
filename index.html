@@ -1,74 +1,181 @@
-Access to the API:
-Available completely free of charge and without restriction. Why is it free? We're testing the system load and optimizing code.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp Mail Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f; /* Visual Studio Blue */
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #2b2b44;
+            padding: 30px;
+            border-radius: 8px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: #4f99fb; /* Light Blue color */
+        }
+        input, button {
+            width: 85%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #444;
+            outline: none;
+            background-color: #3a3a59;
+            color: white;
+        }
+        button {
+            background-color: #4f99fb; /* Blue color for buttons */
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4079c2;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #373757;
+            border-radius: 6px;
+        }
+        .email-list {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #373757;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .email-item {
+            margin: 10px 0;
+            background-color: #2b2b44;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .email-item button {
+            margin-left: 10px;
+            background-color: #d93d3d;
+        }
+        .email-item button:hover {
+            background-color: #c82b2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temp Mail Service</h1>
+        <button onclick="generateEmail()">Generate Temporary Email</button>
+        <div id="email-container" class="info"></div>
 
-How it works:
-Generate email address by using our domain names.
-Sign up on sites that require confirmation by mail.
-The site sends email to the address you specify.
-Message comes to our SMTP server, processed and added to the database.
-You make a request to the API with md5 hash of mail address.
-You get a list of emails.
-Note: You can generate absolutely any email address without API notification
-Usage:
-Request address:
+        <button onclick="fetchMessages()">Fetch Messages</button>
+        <div id="messages-container" class="email-list"></div>
 
-http://api.temp-mail.org/request/mail/id/md5/
-Where md5 email address hash
+        <button onclick="fetchDomains()">Get Available Domains</button>
+        <div id="domains-container" class="info"></div>
+    </div>
 
-Example:
-To check and get a list of emails for a mailbox demo@example.com:
+    <script>
+        const apiBase = "https://api.temp-mail.org/request";  // Use HTTPS here
+        let emailAddress = '';
 
-http://api.temp-mail.org/request/mail/id/7c4ff521986b4ff8d29440beec01972d/
-Source message list:
-http://api.temp-mail.org/request/source/id/md5/
-Where md5 email address hash
+        // Function to generate a new temporary email address
+        async function generateEmail() {
+            try {
+                const response = await fetch(`${apiBase}/mail/id/md5/`);
+                const data = await response.json();
+                emailAddress = data.mail_address;
+                document.getElementById('email-container').innerHTML = `
+                    <p>Temporary Email: <strong>${emailAddress}</strong></p>
+                    <button onclick="fetchMessages()">Fetch Emails for ${emailAddress}</button>
+                `;
+            } catch (error) {
+                console.error('Error generating email:', error);
+            }
+        }
 
-Delete message
-http://api.temp-mail.org/request/delete/id/md5/
-Where md5 unique identifier assigned by the system.
+        // Function to fetch messages for the generated email address
+        async function fetchMessages() {
+            if (!emailAddress) {
+                alert("Please generate an email first!");
+                return;
+            }
 
-Domains list:
-To generate email addresses by using a list of domains obtained through API:
+            const emailHash = md5(emailAddress);
+            try {
+                const response = await fetch(`${apiBase}/mail/id/${emailHash}/format/json/`);
+                const messages = await response.json();
 
-http://api.temp-mail.org/request/domains/
-Response parameters:
-API firsly returns an HTTP header
+                if (messages.length === 0) {
+                    document.getElementById('messages-container').innerHTML = "No messages found!";
+                } else {
+                    const messageList = messages.map(msg => `
+                        <div class="email-item">
+                            <strong>From:</strong> ${msg.mail_from} <br>
+                            <strong>Subject:</strong> ${msg.mail_subject} <br>
+                            <button onclick="viewMessage('${msg.mail_id}')">View</button>
+                            <button onclick="deleteMessage('${msg.mail_id}')">Delete</button>
+                        </div>
+                    `).join('');
+                    document.getElementById('messages-container').innerHTML = messageList;
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        }
 
-Name	Description
-200	Messages received (a list of all them)
-404	Messages not found!
-Response format parameters:
-API supports the output format of the responses, it is enough to indicate the end of the query:
+        // Function to view the content of a specific message
+        async function viewMessage(mailId) {
+            try {
+                const response = await fetch(`${apiBase}/source/id/${mailId}/`);
+                const data = await response.json();
+                alert(`Message Content: \n\n${data.mail_text}`);
+            } catch (error) {
+                console.error('Error viewing message:', error);
+            }
+        }
 
-Format	Request
-XML	/format/xml/
-JSON	/format/json/
-JSONP	/format/jsonp/
-PHP	/format/php/
-HTML	/format/html/
-Example:
-To check and get a list of emails for a mailbox demo@example.com in JSON format:
+        // Function to delete a specific email by its mail_id
+        async function deleteMessage(mailId) {
+            try {
+                const response = await fetch(`${apiBase}/delete/id/${mailId}/`);
+                const data = await response.json();
+                alert('Message deleted successfully!');
+                fetchMessages(); // Refresh the message list
+            } catch (error) {
+                console.error('Error deleting message:', error);
+            }
+        }
 
-http://api.temp-mail.org/request/mail/id/7c4ff521986b4ff8d29440beec01972d/format/json/
-Response parameters:
-Name	Description
-mail_unique_id	Unique identifier assigned by the system.
-mail_id	Unique identifier of the message in md5 hash assigned by the system.
-mail_address_id	md5 email address hash
-mail_from	Sender
-mail_subject	Subject
-mail_preview	Preview
-mail_text_only	Message in text or html format (main)
-mail_text	Message only in text format
-mail_html	Message only in html format
-Examples of integration:
-Language	Details
-Android	https://github.com/vogster/tempmail
-Ansible	https://github.com/lpirl/ansible-roles
-Delphi	https://github.com/ms301/TempMailAPI
-C#	http://pastebin.com/L46R6G7f
-Java	https://github.com/JohnSitarski/Temp-Mail
-JavaScript / NodeJS	https://github.com/mileszim/tempmail.js https://github.com/xomyaq/tempmail
-Python	https://github.com/saippuakauppias/temp-mail
-Ruby	https://github.com/maxd/temp-mail
-1C	http://infostart.org/public/332696/
+        // Function to fetch available domains for generating email addresses
+        async function fetchDomains() {
+            try {
+                const response = await fetch(`${apiBase}/domains/`);
+                const domains = await response.json();
+                const domainList = domains.map(domain => `
+                    <p><strong>Domain:</strong> ${domain}</p>
+                `).join('');
+                document.getElementById('domains-container').innerHTML = domainList;
+            } catch (error) {
+                console.error('Error fetching domains:', error);
+            }
+        }
+
+        // Function to generate MD5 hash (needed for request)
+        function md5(string) {
+            return crypto.createHash('md5').update(string).digest('hex');
+        }
+    </script>
+</body>
+</html>
