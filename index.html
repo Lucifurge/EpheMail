@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temp Mail Loader</title>
+  <style>
+    /* Base Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      line-height: 1.5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #252526;
+      padding: 30px;
+      border-radius: 8px;
+      width: 400px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: #569cd6;
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #569cd6;
+    }
+
+    .button {
+      background: #3c3c3c;
+      color: #dcdcaa;
+      border: 2px solid #3a3d41;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      margin: 10px 0;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .button:hover {
+      background: #569cd6;
+      color: white;
+      box-shadow: 0 0 15px #569cd6, 0 0 20px #569cd6;
+    }
+
+    .output {
+      background: #1e1e1e;
+      color: #9cdcfe;
+      border: 1px solid #3a3d41;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Temp Mail Loader</h1>
+    </header>
+    <div>
+      <div class="button" id="createAccount">Create Account</div>
+      <div class="button" id="getDomains">Get Domains</div>
+      <div class="button" id="getMessages">Get Messages</div>
+      <div class="button" id="deleteAccount">Delete Account</div>
+    </div>
+    <div class="output" id="output">Output will appear here...</div>
+  </div>
+
+  <script>
+    const API_BASE = "https://api.mail.tm";
+    let token = null;
+    let accountId = null;
+
+    const output = document.getElementById("output");
+
+    const displayOutput = (message, isError = false) => {
+      output.style.color = isError ? "red" : "#9cdcfe";
+      output.textContent = message;
+    };
+
+    const handleError = (error) => {
+      displayOutput(`Error: ${error.message || error}`, true);
+    };
+
+    // Create Account
+    document.getElementById("createAccount").addEventListener("click", async () => {
+      try {
+        const response = await fetch(`${API_BASE}/domains`);
+        const domainsData = await response.json();
+        const domain = domainsData["hydra:member"][0]?.domain;
+
+        if (!domain) throw new Error("No domains available.");
+
+        const account = {
+          address: `user@${domain}`,
+          password: "password123",
+        };
+
+        const createResponse = await fetch(`${API_BASE}/accounts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(account),
+        });
+
+        if (!createResponse.ok) throw await createResponse.json();
+
+        const accountData = await createResponse.json();
+        accountId = accountData.id;
+
+        const tokenResponse = await fetch(`${API_BASE}/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(account),
+        });
+
+        if (!tokenResponse.ok) throw await tokenResponse.json();
+
+        const tokenData = await tokenResponse.json();
+        token = tokenData.token;
+
+        displayOutput(`Account created: ${account.address}`);
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    // Get Domains
+    document.getElementById("getDomains").addEventListener("click", async () => {
+      try {
+        const response = await fetch(`${API_BASE}/domains`);
+        const data = await response.json();
+        const domains = data["hydra:member"].map((domain) => domain.domain).join(", ");
+        displayOutput(`Available domains: ${domains}`);
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    // Get Messages
+    document.getElementById("getMessages").addEventListener("click", async () => {
+      try {
+        if (!token) throw new Error("Please create an account first.");
+
+        const response = await fetch(`${API_BASE}/messages`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw await response.json();
+
+        const messages = await response.json();
+        const messageList = messages["hydra:member"]
+          .map((msg) => `From: ${msg.from.address}, Subject: ${msg.subject}`)
+          .join("\n");
+
+        displayOutput(messageList || "No messages found.");
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    // Delete Account
+    document.getElementById("deleteAccount").addEventListener("click", async () => {
+      try {
+        if (!token || !accountId) throw new Error("No account to delete.");
+
+        const response = await fetch(`${API_BASE}/accounts/${accountId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.status !== 204) throw await response.json();
+
+        token = null;
+        accountId = null;
+        displayOutput("Account deleted successfully.");
+      } catch (error) {
+        handleError(error);
+      }
+    });
+  </script>
+</body>
+</html>
