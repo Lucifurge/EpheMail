@@ -3,277 +3,198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TemporaMail</title>
+  <title>TempMail - Temporary Email Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    /* Global Styles */
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Roboto', sans-serif;
       background: #1e1e1e;
       color: #d4d4d4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
     }
 
     /* Navbar */
     .navbar {
+      width: 100%;
+      padding: 15px;
       background: #252526;
-      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
     .navbar h1 {
       color: #569cd6;
-      font-size: 1.5rem;
+      font-family: 'Source Code Pro', monospace;
+      margin: 0;
+      text-shadow: 0 0 10px #569cd6;
     }
-
     .navbar button {
-      background: #3c3c3c;
-      color: #dcdcaa;
-      border: none;
+      background-color: #3c3c3c;
+      border: 1px solid #569cd6;
       padding: 10px 20px;
+      color: #dcdcaa;
+      cursor: pointer;
       font-size: 1rem;
       border-radius: 5px;
-      cursor: pointer;
-      margin-left: 10px;
+      transition: 0.3s;
     }
-
     .navbar button:hover {
-      background: #569cd6;
+      background-color: #569cd6;
       color: white;
+      box-shadow: 0 0 15px #569cd6;
     }
 
+    /* Content */
     .container {
+      width: 100%;
+      max-width: 1000px;
       padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #569cd6;
     }
 
     .output {
-      margin-top: 20px;
       background: #252526;
-      border-radius: 5px;
-      padding: 15px;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       color: #9cdcfe;
-      font-family: monospace;
-      overflow-y: auto;
-      height: 300px;
+      font-family: 'Source Code Pro', monospace;
+      margin-top: 20px;
+      min-height: 100px;
     }
 
-    .output.error {
-      color: red;
+    /* Email List Styles */
+    .email-list {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
     }
-
-    /* Buttons */
-    .action-button {
-      background: #3c3c3c;
-      color: #dcdcaa;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
+    .email-item {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 15px;
+      transition: 0.3s;
       cursor: pointer;
-      margin: 10px 0;
-      width: 100%;
+    }
+    .email-item:hover {
+      background-color: #569cd6;
+      box-shadow: 0 0 15px #569cd6;
+    }
+    .email-item h3 {
+      color: #dcdcaa;
+      font-size: 1.1rem;
+    }
+    .email-item p {
+      color: #c8c8c8;
+      font-size: 0.9rem;
     }
 
-    .action-button:hover {
-      background: #569cd6;
-      color: white;
+    /* Animation */
+    @keyframes glowing {
+      0% { text-shadow: 0 0 5px #569cd6, 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6; }
+      50% { text-shadow: 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6, 0 0 40px #569cd6; }
+      100% { text-shadow: 0 0 5px #569cd6, 0 0 10px #569cd6, 0 0 20px #569cd6, 0 0 30px #569cd6; }
     }
-
-    /* Table for Inbox */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #3a3d41;
-      padding: 10px;
-      text-align: left;
-    }
-
-    th {
-      background: #3a3d41;
+    .neon-text {
+      animation: glowing 1.5s infinite alternate;
     }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <h1>TemporaMail</h1>
+    <h1 class="neon-text">TempMail</h1>
     <div>
-      <button id="createAccount">Create Account</button>
-      <button id="viewInbox">Inbox</button>
-      <button id="accountDetails">Account</button>
-      <button id="deleteAccount">Delete Account</button>
+      <button id="createEmailBtn">Generate Temporary Email</button>
+      <button id="inboxBtn">Inbox</button>
     </div>
   </div>
 
   <div class="container">
-    <h2 id="sectionTitle">Welcome to TemporaMail</h2>
-    <div id="sectionContent">
-      <p>Select an action from the navbar to get started.</p>
-    </div>
-    <div class="output" id="output">Logs and errors will appear here...</div>
+    <h2 class="section-title">Welcome to TempMail</h2>
+    <div id="content"></div>
+    <div id="output" class="output">Output will appear here...</div>
   </div>
 
   <script>
-    const API_BASE = "https://api.mail.tm";
-    let token = null;
-    let accountId = null;
-    let emailAddress = null;
+    const apiBaseUrl = "https://eppheapi-production.up.railway.app/api"; // Your deployed API URL
+    const outputDiv = document.getElementById('output');
+    const contentDiv = document.getElementById('content');
+    
+    // Generate Temporary Email
+    document.getElementById('createEmailBtn').addEventListener('click', async () => {
+      outputDiv.innerHTML = 'Generating a temporary email...';
+      try {
+        const response = await fetch(`${apiBaseUrl}/create-email`);
+        const data = await response.json();
+        const email = data.email;
+        outputDiv.innerHTML = `Temporary Email Created: <strong>${email}</strong>`;
+      } catch (error) {
+        outputDiv.innerHTML = `Error: ${error.message}`;
+      }
+    });
 
-    const sectionTitle = document.getElementById("sectionTitle");
-    const sectionContent = document.getElementById("sectionContent");
-    const output = document.getElementById("output");
+    // Fetch Inbox
+    document.getElementById('inboxBtn').addEventListener('click', async () => {
+      outputDiv.innerHTML = 'Loading inbox...';
+      try {
+        const response = await fetch(`${apiBaseUrl}/emails`);
+        const emails = await response.json();
+        
+        contentDiv.innerHTML = '<h3>Inbox</h3>';
+        const emailList = document.createElement('div');
+        emailList.classList.add('email-list');
+        
+        emails.forEach(email => {
+          const emailItem = document.createElement('div');
+          emailItem.classList.add('email-item');
+          emailItem.innerHTML = `
+            <h3>${email.subject}</h3>
+            <p>From: ${email.sender}</p>
+            <p>Preview: ${email.preview}</p>
+          `;
+          emailItem.addEventListener('click', () => showEmailDetails(email.id));
+          emailList.appendChild(emailItem);
+        });
+        
+        contentDiv.appendChild(emailList);
+        outputDiv.innerHTML = 'Inbox loaded successfully!';
+      } catch (error) {
+        outputDiv.innerHTML = `Error: ${error.message}`;
+      }
+    });
 
-    const displayOutput = (message, isError = false) => {
-      output.textContent = message;
-      output.classList.toggle("error", isError);
+    // Show Email Details
+    const showEmailDetails = async (emailId) => {
+      outputDiv.innerHTML = 'Loading email details...';
+      try {
+        const response = await fetch(`${apiBaseUrl}/email/${emailId}`);
+        const email = await response.json();
+        
+        contentDiv.innerHTML = `
+          <h3>${email.subject}</h3>
+          <p><strong>From:</strong> ${email.sender}</p>
+          <p><strong>Body:</strong> ${email.body}</p>
+        `;
+        
+        outputDiv.innerHTML = 'Email details loaded successfully!';
+      } catch (error) {
+        outputDiv.innerHTML = `Error: ${error.message}`;
+      }
     };
-
-    const handleError = (error) => {
-      displayOutput(`Error: ${error.message || error}`, true);
-    };
-
-    // Create Account
-    document.getElementById("createAccount").addEventListener("click", async () => {
-      sectionTitle.textContent = "Create Account";
-      try {
-        const response = await fetch(`${API_BASE}/domains`);
-        if (!response.ok) throw new Error("Failed to fetch domains.");
-        const domainsData = await response.json();
-
-        const domain = domainsData["hydra:member"][0]?.domain;
-        if (!domain) throw new Error("No available domains.");
-
-        const account = {
-          address: `user@${domain}`,
-          password: "Password123!",
-        };
-
-        const createResponse = await fetch(`${API_BASE}/accounts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(account),
-        });
-
-        if (!createResponse.ok) throw new Error("Failed to create account.");
-
-        const accountData = await createResponse.json();
-        accountId = accountData.id;
-        emailAddress = account.address;
-
-        const tokenResponse = await fetch(`${API_BASE}/token`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(account),
-        });
-
-        if (!tokenResponse.ok) throw new Error("Failed to get token.");
-
-        const tokenData = await tokenResponse.json();
-        token = tokenData.token;
-
-        sectionContent.innerHTML = `<p>Account created successfully:</p>
-          <p>Email: <strong>${emailAddress}</strong></p>`;
-        displayOutput("Account created and authenticated successfully!");
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    // View Inbox
-    document.getElementById("viewInbox").addEventListener("click", async () => {
-      sectionTitle.textContent = "Inbox";
-      try {
-        if (!token) throw new Error("Please create an account first.");
-        const response = await fetch(`${API_BASE}/messages`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch messages.");
-
-        const messages = await response.json();
-        const messageList = messages["hydra:member"];
-        if (!messageList.length) {
-          sectionContent.innerHTML = "<p>No messages found.</p>";
-          return;
-        }
-
-        let table = `<table>
-          <tr>
-            <th>From</th>
-            <th>Subject</th>
-            <th>Received At</th>
-          </tr>`;
-        messageList.forEach((msg) => {
-          table += `
-            <tr>
-              <td>${msg.from.address}</td>
-              <td>${msg.subject}</td>
-              <td>${new Date(msg.createdAt).toLocaleString()}</td>
-            </tr>`;
-        });
-        table += "</table>";
-        sectionContent.innerHTML = table;
-        displayOutput("Inbox loaded successfully!");
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    // View Account Details
-    document.getElementById("accountDetails").addEventListener("click", async () => {
-      sectionTitle.textContent = "Account Details";
-      try {
-        if (!token) throw new Error("Please create an account first.");
-        const response = await fetch(`${API_BASE}/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch account details.");
-
-        const account = await response.json();
-        sectionContent.innerHTML = `<p>Email: <strong>${account.address}</strong></p>
-          <p>Quota: ${account.quota}</p>
-          <p>Used: ${account.used}</p>`;
-        displayOutput("Account details loaded successfully!");
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    // Delete Account
-    document.getElementById("deleteAccount").addEventListener("click", async () => {
-      sectionTitle.textContent = "Delete Account";
-      try {
-        if (!token || !accountId) throw new Error("No account to delete.");
-
-        const response = await fetch(`${API_BASE}/accounts/${accountId}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status !== 204) throw new Error("Failed to delete account.");
-
-        token = null;
-        accountId = null;
-        emailAddress = null;
-
-        sectionContent.innerHTML = "<p>Account deleted successfully.</p>";
-        displayOutput("Account deleted successfully!");
-      } catch (error) {
-        handleError(error);
-      }
-    });
   </script>
 </body>
 </html>
