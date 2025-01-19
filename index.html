@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mail.tm API Integration</title>
+    <title>Temp Mail - Mail.tm</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,14 +33,11 @@
 </head>
 <body>
 
-    <h1>Mail.tm API Integration</h1>
+    <h1>Temp Mail - Mail.tm</h1>
 
     <button onclick="fetchDomains()">Get Domains</button>
     <button onclick="createAccount()">Create Account</button>
-    <button onclick="getAccountInfo()">Get Account Info</button>
-    <button onclick="getMessages()">Get Messages</button>
-    <button onclick="deleteAccount()">Delete Account</button>
-    <button onclick="downloadMessage()">Download Message</button>
+    <button onclick="getMessages()">Get Inbox</button>
 
     <div class="output" id="output"></div>
 
@@ -49,7 +46,6 @@
         let token = ''; // Store the Bearer token
         let accountId = ''; // Store the account ID
         let selectedDomain = ''; // Store the selected domain
-        let selectedMessageId = ''; // Store the selected message ID
 
         // Function to fetch available domains
         async function fetchDomains() {
@@ -125,30 +121,7 @@
             }
         }
 
-        // Function to get account info using the token
-        async function getAccountInfo() {
-            if (!token) {
-                displayMessage('Please create an account and authenticate first.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiUrl}/me`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-                displayMessage('Account Info:');
-                displayMessage(`Email: ${data.address}, Quota: ${data.quota}`);
-            } catch (error) {
-                displayMessage('Error fetching account info: ' + error.message);
-            }
-        }
-
-        // Function to get messages from the created account
+        // Function to get inbox (messages) from the created account
         async function getMessages() {
             if (!token) {
                 displayMessage('Please create an account and authenticate first.');
@@ -167,7 +140,6 @@
                 if (data['hydra:member'].length > 0) {
                     displayMessage('Messages received:');
                     data['hydra:member'].forEach(msg => {
-                        selectedMessageId = msg.id; // Set the selected message ID
                         displayMessage(`From: ${msg.from.address}, Subject: ${msg.subject}`);
                     });
                 } else {
@@ -175,60 +147,6 @@
                 }
             } catch (error) {
                 displayMessage('Error fetching messages: ' + error.message);
-            }
-        }
-
-        // Function to delete an account
-        async function deleteAccount() {
-            if (!accountId) {
-                displayMessage('Please create an account first.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiUrl}/accounts/${accountId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.status === 204) {
-                    displayMessage('Account deleted successfully.');
-                    token = ''; // Reset token after account deletion
-                    accountId = ''; // Reset account ID
-                } else {
-                    displayMessage('Failed to delete account.');
-                }
-            } catch (error) {
-                displayMessage('Error deleting account: ' + error.message);
-            }
-        }
-
-        // Function to download a message
-        async function downloadMessage() {
-            if (!selectedMessageId) {
-                displayMessage('Please fetch messages first.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiUrl}/messages/${selectedMessageId}/download`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const blob = await response.blob();
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `message_${selectedMessageId}.eml`;
-                link.click();
-
-                displayMessage('Message downloaded successfully.');
-            } catch (error) {
-                displayMessage('Error downloading message: ' + error.message);
             }
         }
 
