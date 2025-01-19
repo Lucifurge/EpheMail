@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Temp Mail Loader</title>
+  <title>TemporaMail - Temporary Email Service</title>
   <style>
-    /* Base Reset */
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -16,72 +16,73 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #1e1e1e;
       color: #d4d4d4;
-      line-height: 1.5;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
     }
 
     .container {
-      background: #252526;
-      padding: 30px;
-      border-radius: 8px;
       width: 400px;
+      background: #252526;
+      padding: 20px;
+      border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
     }
 
     header h1 {
       font-size: 1.8rem;
-      color: #569cd6;
       text-align: center;
+      color: #569cd6;
       margin-bottom: 20px;
       text-shadow: 0 0 10px #569cd6;
     }
 
     .button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
       background: #3c3c3c;
       color: #dcdcaa;
       border: 2px solid #3a3d41;
-      padding: 10px 20px;
-      font-size: 1rem;
       border-radius: 5px;
-      margin: 10px 0;
-      cursor: pointer;
-      width: 100%;
       text-align: center;
-      transition: all 0.3s ease-in-out;
+      cursor: pointer;
+      transition: 0.3s;
     }
 
     .button:hover {
       background: #569cd6;
-      color: white;
+      color: #fff;
       box-shadow: 0 0 15px #569cd6, 0 0 20px #569cd6;
     }
 
     .output {
-      background: #1e1e1e;
-      color: #9cdcfe;
-      border: 1px solid #3a3d41;
-      padding: 10px;
       margin-top: 15px;
+      padding: 10px;
+      background: #1e1e1e;
+      border: 1px solid #3a3d41;
       border-radius: 5px;
-      max-height: 150px;
+      height: 120px;
       overflow-y: auto;
-      font-family: monospace;
       font-size: 0.9rem;
+      color: #9cdcfe;
+    }
+
+    .error {
+      color: red;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Temp Mail Loader</h1>
+      <h1>TemporaMail</h1>
     </header>
     <div>
       <div class="button" id="createAccount">Create Account</div>
       <div class="button" id="getDomains">Get Domains</div>
-      <div class="button" id="getMessages">Get Messages</div>
+      <div class="button" id="listMessages">List Messages</div>
       <div class="button" id="deleteAccount">Delete Account</div>
     </div>
     <div class="output" id="output">Output will appear here...</div>
@@ -95,8 +96,7 @@
     const output = document.getElementById("output");
 
     const displayOutput = (message, isError = false) => {
-      output.style.color = isError ? "red" : "#9cdcfe";
-      output.textContent = message;
+      output.innerHTML = `<span class="${isError ? 'error' : ''}">${message}</span>`;
     };
 
     const handleError = (error) => {
@@ -107,14 +107,15 @@
     document.getElementById("createAccount").addEventListener("click", async () => {
       try {
         const response = await fetch(`${API_BASE}/domains`);
+        if (!response.ok) throw new Error("Failed to fetch domains.");
         const domainsData = await response.json();
-        const domain = domainsData["hydra:member"][0]?.domain;
 
-        if (!domain) throw new Error("No domains available.");
+        const domain = domainsData["hydra:member"][0]?.domain;
+        if (!domain) throw new Error("No available domains.");
 
         const account = {
           address: `user@${domain}`,
-          password: "password123",
+          password: "SecurePassword123!",
         };
 
         const createResponse = await fetch(`${API_BASE}/accounts`, {
@@ -123,7 +124,13 @@
           body: JSON.stringify(account),
         });
 
-        if (!createResponse.ok) throw await createResponse.json();
+        if (createResponse.status === 422) {
+          throw new Error("Invalid email address or password.");
+        } else if (createResponse.status === 429) {
+          throw new Error("Too many requests. Please try again later.");
+        } else if (!createResponse.ok) {
+          throw await createResponse.json();
+        }
 
         const accountData = await createResponse.json();
         accountId = accountData.id;
@@ -149,6 +156,7 @@
     document.getElementById("getDomains").addEventListener("click", async () => {
       try {
         const response = await fetch(`${API_BASE}/domains`);
+        if (!response.ok) throw new Error("Failed to fetch domains.");
         const data = await response.json();
         const domains = data["hydra:member"].map((domain) => domain.domain).join(", ");
         displayOutput(`Available domains: ${domains}`);
@@ -157,8 +165,8 @@
       }
     });
 
-    // Get Messages
-    document.getElementById("getMessages").addEventListener("click", async () => {
+    // List Messages
+    document.getElementById("listMessages").addEventListener("click", async () => {
       try {
         if (!token) throw new Error("Please create an account first.");
 
@@ -171,7 +179,7 @@
         const messages = await response.json();
         const messageList = messages["hydra:member"]
           .map((msg) => `From: ${msg.from.address}, Subject: ${msg.subject}`)
-          .join("\n");
+          .join("<br>");
 
         displayOutput(messageList || "No messages found.");
       } catch (error) {
