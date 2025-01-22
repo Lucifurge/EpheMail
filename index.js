@@ -3,30 +3,42 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
         // Display the loading message
         displayMessage('Creating account...', 'info');
 
-        // Call the backend API to get account info
-        const response = await axios.post('https://eppheapi-production.up.railway.app/create-account');
-        console.log(response.data);
+        // Call the backend API to create an account
+        const response = await axios.post('https://eppheapi-production.up.railway.app/create-account'); // Backend endpoint
+        console.log(response.data);  // Log the response to inspect the structure
 
-        // Ensure response contains an address and extract domain
-        const domain = response.data.address.split('@')[1];
+        const accountDetails = response.data;
+        const { address, password } = accountDetails;
 
-        if (!domain) {
-            displayMessage('Domain not found!', 'error');
-            return;
+        // Display the account creation details
+        displayMessage('Account Created: ' + JSON.stringify(accountDetails), 'success');
+        document.getElementById('accountResult').style.display = 'block';
+        document.getElementById('form-text').textContent = `Email: ${address}\nPassword: ${password}`;
+
+        // Authenticate the user to get a token
+        const authResponse = await axios.post('https://eppheapi-production.up.railway.app/authenticate', {
+            address,
+            password
+        });
+
+        const token = authResponse.data.token;
+        console.log('Authentication successful, token:', token);
+
+        if (token) {
+            // Fetch messages using the token
+            const messagesResponse = await axios.post('https://eppheapi-production.up.railway.app/fetch-messages', { token });
+
+            const messages = messagesResponse.data.messages;
+            if (messages && messages.length > 0) {
+                messages.forEach(message => {
+                    addInboxMessage(message.from.address, message.subject, message.intro);
+                });
+            } else {
+                addInboxMessage('No messages found.');
+            }
+        } else {
+            displayMessage('Failed to authenticate.', 'error');
         }
-
-        console.log('Available Domain:', domain);
-
-        // Generate random credentials using the extracted domain
-        const { username, password } = generateRandomCredentials(domain);
-        const address = `${username}@${domain}`;
-
-        // Create the account using the backend API
-        const account = await createAccount(domain);
-        displayMessage('Account Created: ' + JSON.stringify(account), 'success');
-
-        // Fetch inbox messages using the created email address
-        fetchMessages(address);
 
     } catch (error) {
         console.error('Error in main process:', error.message);
@@ -34,55 +46,7 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
     }
 });
 
-// Function to generate random credentials (username and password)
-function generateRandomCredentials(domain) {
-    const username = 'user' + Math.random().toString(36).substring(7); // Random username
-    const password = Math.random().toString(36).substring(2, 10);  // Random password
-    return { username, password };
-}
-
-// Function to create the account (backend API call)
-async function createAccount(domain) {
-    try {
-        const { username, password } = generateRandomCredentials(domain);
-        const address = `${username}@${domain}`;
-
-        // Send request to Mail.tm API to create the account
-        const response = await axios.post('https://api.mail.tm/accounts', {
-            address,
-            password,
-        });
-
-        console.log('Account Created:', response.data);
-
-        return { address, password, data: response.data };
-    } catch (error) {
-        console.error('Error creating account:', error.message);
-        throw error;
-    }
-}
-
-// Function to fetch inbox messages for the created email address
-async function fetchMessages(email) {
-    try {
-        const response = await axios.get(`https://eppheapi-production.up.railway.app/messages?email=${email}`);
-        console.log('Messages:', response.data);
-
-        if (response.data['hydra:member'].length > 0) {
-            const messages = response.data['hydra:member'];
-            messages.forEach(message => {
-                addInboxMessage(message.from.address, message.subject, message.intro);
-            });
-        } else {
-            displayMessage('No messages found in your inbox.', 'info');
-        }
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        displayMessage('Error fetching messages: ' + error.message, 'error');
-    }
-}
-
-// Function to display messages
+// Function to display messages (Success/Error/Info)
 function displayMessage(message, type) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${type}`;
@@ -100,4 +64,14 @@ function addInboxMessage(from, subject, intro) {
     inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${intro}</p>`;
     inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
     inboxDiv.appendChild(inboxItem);
+}
+
+// Function to copy text (account info)
+function copyText() {
+    const text = document.getElementById('form-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard!');
+    }).catch(err => {
+        alert('Error copying text: ' + err);
+    });
 }
