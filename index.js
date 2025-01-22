@@ -24,11 +24,6 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
         // Create the account using the backend API
         const account = await createAccount(domain);
         displayMessage('Account Created: ' + JSON.stringify(account), 'success');
-        
-        // Fetch inbox messages using the created email address
-        const createdEmail = response.data.address;  // Get the email address from the response
-        fetchMessages(createdEmail);  // Call the fetchMessages function after account creation
-
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
@@ -63,7 +58,7 @@ async function createAccount(domain) {
     }
 }
 
-// Function to display messages (Success/Error/Info)
+// Function to display messages
 function displayMessage(message, type) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${type}`;
@@ -71,38 +66,4 @@ function displayMessage(message, type) {
     const messagesDiv = document.getElementById('messages');
     messagesDiv.innerHTML = ''; // Clear previous messages
     messagesDiv.appendChild(messageElement);
-}
-
-// Function to fetch messages for the created email address
-async function fetchMessages(email) {
-    try {
-        const response = await axios.get(`https://eppheapi-production.up.railway.app/messages?email=${email}`);
-        const messages = response.data['hydra:member'];
-
-        if (messages.length === 0) {
-            displayMessage('No messages in inbox', 'info');
-        } else {
-            // Clear inbox before adding new messages
-            const inboxDiv = document.getElementById('inbox');
-            inboxDiv.innerHTML = ''; // Clear the inbox
-
-            // Loop through the messages and display them
-            messages.forEach(message => {
-                addInboxMessage(message.from.address, message.subject, message.intro);
-            });
-        }
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        displayMessage('Error fetching messages', 'error');
-    }
-}
-
-// Function to add inbox messages to the page
-function addInboxMessage(from, subject, intro) {
-    const inboxDiv = document.getElementById('inbox');
-    const inboxItem = document.createElement('div');
-    inboxItem.classList.add('inbox-item');
-    inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${intro}</p>`;
-    inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
-    inboxDiv.appendChild(inboxItem);
 }
