@@ -1,14 +1,16 @@
 document.getElementById('createAccountBtn').addEventListener('click', async function () {
     try {
         // Display the loading message
-        displayMessage('Creating account...', 'info');
+        displayMessage('Creating accounts...', 'info');
+
+        const accounts = []; // Store generated accounts
 
         // Call the backend API to get account info
         const response = await axios.post('https://eppheapi-production.up.railway.app/create-account'); // Updated to your production URL
         console.log(response.data);  // Log the response to inspect the structure
 
         // Ensure response contains an address and extract domain
-        const domain = response.data.address.split('@')[1];  // Extract domain from email address
+        const domain = response.data.address.split('@')[1]; // Extract domain from email address
 
         if (!domain) {
             displayMessage('Domain not found!', 'error');
@@ -17,13 +19,14 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Generate random credentials using the extracted domain
-        const { username, password } = generateRandomCredentials(domain);
-        const address = `${username}@${domain}`;
+        // Generate and create accounts 4 times
+        for (let i = 0; i < 4; i++) {
+            const account = await createAccount(domain);
+            accounts.push(account);
+        }
 
-        // Create the account using the backend API
-        const account = await createAccount(domain);
-        displayMessage('Account Created: ' + JSON.stringify(account), 'success');
+        // Display all created accounts
+        displayMessage('Accounts Created: ' + JSON.stringify(accounts, null, 2), 'success');
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
