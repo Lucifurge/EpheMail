@@ -14,10 +14,29 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: flex-start;
             flex-direction: column;
+            height: 100vh;
         }
+
+        .navbar {
+            background: linear-gradient(90deg, #2c2c54, #212642);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            padding: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: #58a6ff;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
         .container {
             width: 60%;
             max-width: 900px;
@@ -25,12 +44,15 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-top: 100px;
         }
+
         h1 {
             text-align: center;
             color: #58a6ff;
             font-size: 2.5rem;
         }
+
         button {
             background-color: #58a6ff;
             color: #fff;
@@ -43,13 +65,16 @@
             margin: 15px 0;
             transition: background 0.3s ease, transform 0.3s ease;
         }
+
         button:hover {
             background-color: #0062cc;
             transform: scale(1.05);
         }
+
         button:active {
             transform: scale(0.98);
         }
+
         .message {
             background-color: #333;
             border: 1px solid #444;
@@ -58,14 +83,17 @@
             margin-top: 20px;
             transition: all 0.3s ease;
         }
+
         .error {
             background-color: #cc0000;
             border-color: #990000;
         }
+
         .success {
             background-color: #28a745;
             border-color: #006600;
         }
+
         .loading {
             text-align: center;
             padding: 10px;
@@ -73,22 +101,52 @@
             background-color: #ff9900;
             border-radius: 5px;
         }
-        /* Navbar */
-        .navbar {
-            background: linear-gradient(90deg, #2c2c54, #212642);
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+
+        .inbox-section {
             width: 100%;
-            padding: 15px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
+            margin-top: 30px;
         }
-        .navbar-brand {
+
+        .inbox {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .inbox-item {
+            background-color: #444;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .inbox-item:hover {
+            background-color: #555;
+        }
+
+        .inbox-item p {
+            margin: 0;
+            color: #dcdcdc;
+        }
+
+        .section {
+            width: 100%;
+            margin-top: 30px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section h2 {
             color: #58a6ff;
-            font-weight: bold;
-            font-size: 1.5rem;
-            text-decoration: none;
+        }
+
+        .section-content {
+            color: #dcdcdc;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -99,7 +157,7 @@
         <a href="#" class="navbar-brand">Ephemail Development</a>
     </nav>
 
-    <!-- Main Container -->
+    <!-- Main Container for Account Creation Section -->
     <div class="container">
         <h1>Account Creation System</h1>
         <button id="createAccountBtn">Create Account</button>
@@ -107,8 +165,66 @@
         <div id="loadingMessage" class="loading" style="display: none;">Creating your account...</div>
     </div>
 
+    <!-- Inbox Section -->
+    <div class="container inbox-section">
+        <h1>Inbox</h1>
+        <div id="inbox" class="inbox">
+            <!-- Simulated emails will be shown here -->
+        </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="container section" id="settingsSection">
+        <h2>Settings</h2>
+        <div class="section-content">
+            <p>Customize your Ephemail settings here.</p>
+            <button onclick="displayMessage('Settings saved successfully!', 'success')">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="container section" id="helpSection">
+        <h2>Help</h2>
+        <div class="section-content">
+            <p>If you need assistance, please contact our support team or check our FAQ.</p>
+            <button onclick="displayMessage('Help section accessed!', 'info')">Access Help</button>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="container section" id="contactSection">
+        <h2>Contact Us</h2>
+        <div class="section-content">
+            <p>If you have any questions, feel free to reach out!</p>
+            <button onclick="displayMessage('Contact form submitted!', 'info')">Submit Contact Form</button>
+        </div>
+    </div>
+ <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <!-- External JavaScript -->
     <script src="index.js"></script>
+
+    <script>
+        // Function to display messages
+        function displayMessage(message, type) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}`;
+            messageElement.textContent = message;
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = ''; // Clear previous messages
+            messagesDiv.appendChild(messageElement);
+        }
+
+        // Simulate adding an inbox message
+        function addInboxMessage(from, subject, message) {
+            const inboxDiv = document.getElementById('inbox');
+            const inboxItem = document.createElement('div');
+            inboxItem.classList.add('inbox-item');
+            inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${message}</p>`;
+            inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
+            inboxDiv.appendChild(inboxItem);
+        }
+    </script>
 
 </body>
 </html>
