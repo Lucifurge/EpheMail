@@ -64,6 +64,14 @@ async function createAccount(domain) {
         return { address, password, data: response.data };
     } catch (error) {
         console.error('Error creating account:', error.message);
+        
+        // If rate-limited (status code 429), wait for a longer delay
+        if (error.response && error.response.status === 429) {
+            console.log('Rate limit exceeded, waiting for a longer delay...');
+            await delay(5000); // Wait 5 seconds before retrying
+            return createAccount(domain); // Retry the request
+        }
+
         throw error;
     }
 }
