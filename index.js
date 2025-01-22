@@ -19,14 +19,17 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Generate and create accounts 4 times
-        for (let i = 0; i < 4; i++) {
+        // Create 2 accounts with a 3-second delay between each
+        for (let i = 0; i < 2; i++) {
             const account = await createAccount(domain);
             accounts.push(account);
+            displayMessage(`Account ${i + 1} Created: ${JSON.stringify(account)}`, 'success');
+
+            if (i < 1) await delay(3000); // Delay for 3 seconds after the first account
         }
 
         // Display all created accounts
-        displayMessage('Accounts Created: ' + JSON.stringify(accounts, null, 2), 'success');
+        console.log('All Accounts Created:', accounts);
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
@@ -59,6 +62,11 @@ async function createAccount(domain) {
         console.error('Error creating account:', error.message);
         throw error;
     }
+}
+
+// Function to create a delay
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Function to display messages
