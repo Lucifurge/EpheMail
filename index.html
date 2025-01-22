@@ -133,6 +133,32 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+
+        /* Inbox Section */
+        .inbox {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .inbox-item {
+            background-color: #444;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .inbox-item:hover {
+            background-color: #555;
+        }
+
+        .inbox-item p {
+            margin: 0;
+            color: #dcdcdc;
+        }
     </style>
 </head>
 
@@ -189,6 +215,16 @@
             messagesDiv.appendChild(messageElement);
         }
 
+        // Simulate adding an inbox message based on current email
+        function addInboxMessage(from, subject, message) {
+            const inboxDiv = document.getElementById('inbox');
+            const inboxItem = document.createElement('div');
+            inboxItem.classList.add('inbox-item');
+            inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${message}</p>`;
+            inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
+            inboxDiv.appendChild(inboxItem);
+        }
+
         // Handle Account Creation Button
         document.getElementById('createAccountBtn').addEventListener('click', async function () {
             try {
@@ -208,6 +244,10 @@
 
                 displayMessage('Account successfully created!', 'success');
 
+                // Simulate adding an inbox message (using the created email address)
+                const createdEmail = response.data.address;  // Get the email address from the response
+                addInboxMessage('support@tempmail.com', 'Welcome to Ephemail!', `Hello, your temporary email ${createdEmail} has been successfully created.`);
+
             } catch (error) {
                 console.error('Error in account creation:', error);
                 displayMessage('Error occurred: ' + error.message, 'error');
@@ -222,16 +262,6 @@
             }).catch(err => {
                 alert('Error copying text: ' + err);
             });
-        }
-
-        // Simulate adding an inbox message
-        function addInboxMessage(from, subject, message) {
-            const inboxDiv = document.getElementById('inbox');
-            const inboxItem = document.createElement('div');
-            inboxItem.classList.add('inbox-item');
-            inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${message}</p>`;
-            inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
-            inboxDiv.appendChild(inboxItem);
         }
     </script>
 </body>
