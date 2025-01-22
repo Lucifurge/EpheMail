@@ -1,3 +1,4 @@
+// Event listener for the "Create Account" button
 document.getElementById('createAccountBtn').addEventListener('click', async function () {
     try {
         // Display the loading message
@@ -66,4 +67,16 @@ function displayMessage(message, type) {
     const messagesDiv = document.getElementById('messages');
     messagesDiv.innerHTML = ''; // Clear previous messages
     messagesDiv.appendChild(messageElement);
+}
+
+// Simulating Inbox functionality
+
+// Function to add simulated email to the inbox
+function addInboxMessage(from, subject, message) {
+    const inboxDiv = document.getElementById('inbox');
+    const inboxItem = document.createElement('div');
+    inboxItem.classList.add('inbox-item');
+    inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${message}</p>`;
+    inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
+    inboxDiv.appendChild(inboxItem);
 }
