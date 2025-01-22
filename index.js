@@ -37,7 +37,7 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
             // Check if we need to wait before sending the next batch
             if ((i + 1) % batchSize === 0 && i + 1 < totalAccounts) {
-                await delay(1000); // Wait for 1 second after every batch of 8
+                await delay(6000); // Wait for 6 seconds after every batch of 8
             }
         }
 
