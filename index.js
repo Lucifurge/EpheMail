@@ -4,10 +4,12 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
         displayMessage('Creating accounts...', 'info');
 
         const accounts = []; // Store generated accounts
+        const accountBox = document.getElementById('accountBox'); // Get the account display box
+        accountBox.innerHTML = ''; // Clear previous accounts
 
         // Call the backend API to get account info
         const response = await axios.post('https://eppheapi-production.up.railway.app/create-account'); // Updated to your production URL
-        console.log(response.data);  // Log the response to inspect the structure
+        console.log(response.data); // Log the response to inspect the structure
 
         // Ensure response contains an address and extract domain
         const domain = response.data.address.split('@')[1]; // Extract domain from email address
@@ -19,17 +21,21 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Create 2 accounts with a 3-second delay between each
-        for (let i = 0; i < 2; i++) {
+        // Create 10 accounts with a 3-second delay between each
+        for (let i = 0; i < 10; i++) {
             const account = await createAccount(domain);
             accounts.push(account);
-            displayMessage(`Account ${i + 1} Created: ${JSON.stringify(account)}`, 'success');
 
-            if (i < 1) await delay(3000); // Delay for 3 seconds after the first account
+            // Add the account details to the account box
+            const accountEntry = document.createElement('div');
+            accountEntry.textContent = `Email: ${account.address}, Password: ${account.password}`;
+            accountBox.appendChild(accountEntry);
+
+            if (i < 9) await delay(3000); // Delay for 3 seconds after each account except the last
         }
 
-        // Display all created accounts
-        console.log('All Accounts Created:', accounts);
+        // Final success message
+        displayMessage('All accounts created successfully!', 'success');
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
@@ -39,7 +45,7 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 // Function to generate random credentials (username and password)
 function generateRandomCredentials(domain) {
     const username = 'user' + Math.random().toString(36).substring(7); // Random username
-    const password = Math.random().toString(36).substring(2, 10);  // Random password
+    const password = Math.random().toString(36).substring(2, 10); // Random password
     return { username, password };
 }
 
