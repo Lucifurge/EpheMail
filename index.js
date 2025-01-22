@@ -21,7 +21,7 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Create 10 accounts with a 3-second delay between each
+        // Create 10 accounts with a 4.5-second delay between each
         for (let i = 0; i < 10; i++) {
             const account = await createAccount(domain);
             accounts.push(account);
@@ -29,9 +29,10 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
             // Add the account details to the account box
             const accountEntry = document.createElement('div');
             accountEntry.textContent = `Email: ${account.address}, Password: ${account.password}`;
+            accountEntry.className = 'account-item';
             accountBox.appendChild(accountEntry);
 
-            if (i < 9) await delay(3000); // Delay for 3 seconds after each account except the last
+            if (i < 9) await delay(4500); // Delay for 4.5 seconds after each account except the last
         }
 
         // Final success message
