@@ -200,10 +200,10 @@
     <div class="container inbox-section">
         <h1>Inbox</h1>
         <div id="inbox" class="inbox">
-            <!-- Simulated inbox messages will appear here -->
+            <!-- Inbox messages will appear here -->
         </div>
     </div>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <!-- External JavaScript (Your index.js File) -->
     <script src="index.js"></script>
 
@@ -218,12 +218,31 @@
             messagesDiv.appendChild(messageElement);
         }
 
-        // Simulate adding an inbox message based on current email
-        function addInboxMessage(from, subject, message) {
+        // Function to fetch messages for the created email address
+        async function fetchMessages(email) {
+            try {
+                const response = await axios.get(`https://eppheapi-production.up.railway.app/messages?email=${email}`);
+                const messages = response.data['hydra:member'];
+
+                if (messages.length === 0) {
+                    addInboxMessage('No messages in your inbox');
+                } else {
+                    messages.forEach(message => {
+                        addInboxMessage(message.from.address, message.subject, message.intro);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                displayMessage('Error fetching messages', 'error');
+            }
+        }
+
+        // Function to add inbox messages to the page
+        function addInboxMessage(from, subject, intro) {
             const inboxDiv = document.getElementById('inbox');
             const inboxItem = document.createElement('div');
             inboxItem.classList.add('inbox-item');
-            inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${message}</p>`;
+            inboxItem.innerHTML = `<p><strong>From:</strong> ${from}</p><p><strong>Subject:</strong> ${subject}</p><p>${intro}</p>`;
             inboxItem.addEventListener('click', () => alert('Email opened: ' + subject));
             inboxDiv.appendChild(inboxItem);
         }
@@ -246,9 +265,9 @@
 
                 displayMessage('Account successfully created!', 'success');
 
-                // Simulate adding an inbox message (using the created email address)
+                // Fetch inbox messages using the created email address
                 const createdEmail = response.data.address;  // Get the email address from the response
-                addInboxMessage('support@tempmail.com', 'Welcome to Ephemail!', `Hello, your temporary email ${createdEmail} has been successfully created.`);
+                fetchMessages(createdEmail);
 
             } catch (error) {
                 console.error('Error in account creation:', error);
