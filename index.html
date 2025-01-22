@@ -156,23 +156,79 @@
             margin: 0;
             color: #dcdcdc;
         }
+
+        /* Login Dropdown */
+        .dropdown-menu {
+            background-color: #212642;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .dropdown-menu input {
+            background-color: #2c2c54;
+            border: none;
+            color: #dcdcdc;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .dropdown-menu button {
+            background-color: #58a6ff;
+            color: white;
+            width: 100%;
+        }
+
     </style>
 </head>
 
 <body>
 
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Ephemail Development</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Login Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li>
+                                <input type="email" id="loginEmail" placeholder="Email" />
+                            </li>
+                            <li>
+                                <input type="password" id="loginPassword" placeholder="Password" />
+                            </li>
+                            <li>
+                                <button id="loginBtn">Login</button>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Inbox Button -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#inboxSection">Inbox</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <header class="hero">
         <h1>Welcome to Ephemail Development</h1>
         <p>Your go-to platform for seamless email solutions and development services.</p>
         <a href="#accountCreation" class="btn">Get Started</a>
     </header>
 
+    <!-- Account Creation Section -->
     <div class="container" id="accountCreation">
         <h1>Account Creation</h1>
         <button id="createAccountBtn">Create Account</button>
@@ -180,21 +236,23 @@
         <div id="loadingMessage" class="loading" style="display: none;">Creating your account...</div>
     </div>
 
+    <!-- Account Result Section -->
     <div class="container" id="accountResult">
         <h2>Account Created</h2>
         <pre id="form-text"></pre>
         <button onclick="copyText()">Copy Text</button>
     </div>
 
-    <div class="container inbox-section">
+    <!-- Inbox Section -->
+    <div class="container inbox-section" id="inboxSection">
         <h1>Inbox</h1>
         <div id="inbox" class="inbox"></div>
     </div>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- External JavaScript (Your index.js File) -->
     <script src="index.js"></script>
 
-  
 </body>
 
 </html>
