@@ -30,10 +30,10 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
     }
 });
 
-// Function to create random credentials (username and password)
+// Function to generate random credentials (username and password)
 function generateRandomCredentials(domain) {
-    const username = faker.internet.userName(); // Generate a random username
-    const password = faker.internet.password();  // Generate a random password
+    const username = 'user' + Math.random().toString(36).substring(7); // Random username
+    const password = Math.random().toString(36).substring(2, 10);  // Random password
     return { username, password };
 }
 
