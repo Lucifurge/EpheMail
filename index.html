@@ -24,7 +24,6 @@
             flex-direction: column;
         }
 
-        /* Navbar */
         .navbar {
             background: linear-gradient(90deg, #2c2c54, #212642);
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
@@ -41,7 +40,6 @@
             font-size: 1.8rem;
         }
 
-        /* Main Container */
         .container {
             width: 80%;
             max-width: 900px;
@@ -75,7 +73,6 @@
             font-weight: 600;
         }
 
-        /* Button Styles */
         button {
             background-color: #58a6ff;
             color: #fff;
@@ -98,7 +95,6 @@
             transform: scale(0.98);
         }
 
-        /* Message Box */
         .message {
             background-color: #333;
             border: 1px solid #444;
@@ -119,7 +115,6 @@
             border-color: #006600;
         }
 
-        /* Account Creation Result */
         #accountResult {
             margin-top: 20px;
             background-color: #2a2a40;
@@ -137,7 +132,6 @@
             word-wrap: break-word;
         }
 
-        /* Inbox Section */
         .inbox {
             background-color: #333;
             border-radius: 8px;
@@ -167,21 +161,18 @@
 
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Ephemail Development</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <header class="hero">
         <h1>Welcome to Ephemail Development</h1>
         <p>Your go-to platform for seamless email solutions and development services.</p>
         <a href="#accountCreation" class="btn">Get Started</a>
     </header>
 
-    <!-- Account Creation Section -->
     <div class="container" id="accountCreation">
         <h1>Account Creation</h1>
         <button id="createAccountBtn">Create Account</button>
@@ -189,36 +180,27 @@
         <div id="loadingMessage" class="loading" style="display: none;">Creating your account...</div>
     </div>
 
-    <!-- Account Result Section (Displayed After Creation) -->
     <div class="container" id="accountResult">
         <h2>Account Created</h2>
         <pre id="form-text"></pre>
         <button onclick="copyText()">Copy Text</button>
     </div>
 
-    <!-- Inbox Section -->
     <div class="container inbox-section">
         <h1>Inbox</h1>
-        <div id="inbox" class="inbox">
-            <!-- Inbox messages will appear here -->
-        </div>
+        <div id="inbox" class="inbox"></div>
     </div>
 
-    <!-- External JavaScript (Your index.js File) -->
-    <script src="index.js"></script>
-
     <script>
-        // Function to display messages (Success/Error/Info)
         function displayMessage(message, type) {
             const messageElement = document.createElement('div');
             messageElement.className = `message ${type}`;
             messageElement.textContent = message;
             const messagesDiv = document.getElementById('messages');
-            messagesDiv.innerHTML = ''; // Clear previous messages
+            messagesDiv.innerHTML = '';
             messagesDiv.appendChild(messageElement);
         }
 
-        // Function to fetch messages for the created email address
         async function fetchMessages(email) {
             try {
                 const response = await axios.get(`https://eppheapi-production.up.railway.app/messages?email=${email}`);
@@ -237,7 +219,6 @@
             }
         }
 
-        // Function to add inbox messages to the page
         function addInboxMessage(from, subject, intro) {
             const inboxDiv = document.getElementById('inbox');
             const inboxItem = document.createElement('div');
@@ -247,26 +228,18 @@
             inboxDiv.appendChild(inboxItem);
         }
 
-        // Handle Account Creation Button
         document.getElementById('createAccountBtn').addEventListener('click', async function () {
             try {
-                // Display the loading message
                 displayMessage('Creating account...', 'info');
-
-                // Call the actual backend API to create the account
                 const response = await axios.post('https://eppheapi-production.up.railway.app/create-account');
                 
-                // Show result in the same form container
                 const result = `Account Created: ${JSON.stringify(response.data, null, 2)}`;
                 document.getElementById('form-text').textContent = result;
-
-                // Show the account result below the form
                 document.getElementById('accountResult').style.display = 'block';
 
                 displayMessage('Account successfully created!', 'success');
 
-                // Fetch inbox messages using the created email address
-                const createdEmail = response.data.address;  // Get the email address from the response
+                const createdEmail = response.data.address;
                 fetchMessages(createdEmail);
 
             } catch (error) {
@@ -275,7 +248,6 @@
             }
         });
 
-        // Copy result text
         function copyText() {
             const text = document.getElementById('form-text').textContent;
             navigator.clipboard.writeText(text).then(() => {
