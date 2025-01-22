@@ -121,8 +121,11 @@
 
         /* Account Creation Result */
         #accountResult {
-            display: none;
             margin-top: 20px;
+            background-color: #2a2a40;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
         }
 
         pre {
@@ -238,9 +241,8 @@
                 const result = `Account Created: ${JSON.stringify(response.data, null, 2)}`;
                 document.getElementById('form-text').textContent = result;
 
-                // Show the account result and hide the account creation button
+                // Show the account result below the form
                 document.getElementById('accountResult').style.display = 'block';
-                document.getElementById('accountCreation').style.display = 'none';
 
                 displayMessage('Account successfully created!', 'success');
 
