@@ -100,21 +100,22 @@
             border-color: #006600;
         }
 
-        #accountBox {
+        #accountsSection {
             margin-top: 20px;
             background-color: #2a2a40;
             padding: 15px;
             border-radius: 8px;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
         }
 
-        .account-item {
+        .account-box {
             background-color: #333;
             padding: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
             border-radius: 6px;
             color: #dcdcdc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -141,9 +142,11 @@
         <h1>Account Creation</h1>
         <button id="createAccountBtn">Create Accounts</button>
         <div id="messages"></div>
-        <div id="accountBox">
-            <!-- Created accounts will be displayed here -->
-        </div>
+    </div>
+
+    <!-- Stacked Accounts Section -->
+    <div class="container" id="accountsSection">
+        <!-- Created accounts will stack here -->
     </div>
 
     <!-- JavaScript -->
