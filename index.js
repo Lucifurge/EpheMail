@@ -21,9 +21,11 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
         const { username, password } = generateRandomCredentials(domain);
         const address = `${username}@${domain}`;
 
-        // Create the account using the backend API
-        const account = await createAccount(domain);
-        displayMessage('Account Created: ' + JSON.stringify(account), 'success');
+        // Create the account
+        const account = { address, password };
+
+        // Display the account in a new box
+        displayAccount(account);
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
@@ -37,25 +39,25 @@ function generateRandomCredentials(domain) {
     return { username, password };
 }
 
-// Function to create the account (backend API call)
-async function createAccount(domain) {
-    try {
-        const { username, password } = generateRandomCredentials(domain);
-        const address = `${username}@${domain}`;
+// Function to display a new account in a separate box
+function displayAccount(account) {
+    const accountContainer = document.createElement('div');
+    accountContainer.className = 'account-box';
 
-        // Send request to Mail.tm API to create the account
-        const response = await axios.post('https://api.mail.tm/accounts', {
-            address,
-            password,
-        });
+    // Create a div for the email and password
+    const accountDetails = document.createElement('div');
+    accountDetails.className = 'account-details';
+    accountDetails.textContent = `Email: ${account.address}, Password: ${account.password}`;
 
-        console.log('Account Created:', response.data);
+    // Append the details to the container
+    accountContainer.appendChild(accountDetails);
 
-        return { address, password, data: response.data };
-    } catch (error) {
-        console.error('Error creating account:', error.message);
-        throw error;
-    }
+    // Add the account box to the accounts section
+    const accountsSection = document.getElementById('accountsSection');
+    accountsSection.appendChild(accountContainer);
+
+    // Display success message
+    displayMessage('Account Created: ' + account.address, 'success');
 }
 
 // Function to display messages
@@ -67,6 +69,3 @@ function displayMessage(message, type) {
     messagesDiv.innerHTML = ''; // Clear previous messages
     messagesDiv.appendChild(messageElement);
 }
-
-
-
