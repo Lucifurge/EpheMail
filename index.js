@@ -1,11 +1,10 @@
 document.getElementById('createAccountBtn').addEventListener('click', async function () {
     try {
         // Display the loading message
-        displayMessage('Creating accounts...', 'info');
+        displayMessage('Creating account...', 'info');
 
-        const accounts = []; // Store generated accounts
         const accountBox = document.getElementById('accountBox'); // Get the account display box
-        accountBox.innerHTML = ''; // Clear previous accounts
+        accountBox.innerHTML = ''; // Clear previous account entries
 
         // Call the backend API to get account info
         const response = await axios.post('https://eppheapi-production.up.railway.app/create-account'); // Updated to your production URL
@@ -21,28 +20,20 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Create accounts in batches of 8 requests
-        const batchSize = 8;
-        const totalAccounts = 10;
+        // Generate random credentials
+        const account = await createAccount(domain);
 
-        for (let i = 0; i < totalAccounts; i++) {
-            const account = await createAccount(domain);
-            accounts.push(account);
-
-            // Add the account details to the account box
-            const accountEntry = document.createElement('div');
-            accountEntry.textContent = `Email: ${account.address}, Password: ${account.password}`;
-            accountEntry.className = 'account-item';
-            accountBox.appendChild(accountEntry);
-
-            // Check if we need to wait before sending the next batch
-            if ((i + 1) % batchSize === 0 && i + 1 < totalAccounts) {
-                await delay(6000); // Wait for 6 seconds after every batch of 8
-            }
-        }
+        // Add the account details to the account box
+        const accountEntry = document.createElement('div');
+        accountEntry.textContent = `Email: ${account.address}, Password: ${account.password}`;
+        accountEntry.className = 'account-item';
+        accountBox.appendChild(accountEntry);
 
         // Final success message
-        displayMessage('All accounts created successfully!', 'success');
+        displayMessage('Account created successfully!', 'success');
+        
+        // Wait for 1 second before allowing the next click
+        await delay(1000);
     } catch (error) {
         console.error('Error in main process:', error.message);
         displayMessage('Error occurred: ' + error.message, 'error');
