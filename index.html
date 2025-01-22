@@ -3,159 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temp Mail - Mail.tm</title>
+    <title>Account Creation System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #333;
-            color: white;
+            font-family: 'Roboto', sans-serif;
+            background-color: #2d2d2d;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            width: 60%;
+            max-width: 900px;
+            background-color: #1e1e1e;
             padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #00aaff;
         }
         button {
-            background-color: #007BFF;
+            background-color: #0066cc;
+            color: #fff;
             border: none;
-            padding: 10px;
-            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            border-radius: 4px;
+            width: 100%;
+            margin: 10px 0;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #004b8d;
         }
-        .output {
-            margin-top: 20px;
-            background-color: #444;
+        .message {
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 4px;
             padding: 10px;
-            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .error {
+            background-color: #cc0000;
+            border-color: #990000;
+        }
+        .success {
+            background-color: #008000;
+            border-color: #006600;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Account Creation System</h1>
+        <button id="createAccountBtn">Create Account</button>
+        <div id="messages"></div>
+    </div>
 
-    <h1>Temp Mail - Mail.tm</h1>
-
-    <button onclick="fetchDomains()">Get Domains</button>
-    <button onclick="createAccount()">Create Account</button>
-    <button onclick="getMessages()">Get Inbox</button>
-
-    <div class="output" id="output"></div>
-
-    <script>
-        const apiUrl = 'https://api.mail.tm'; // Base URL for Mail.tm API
-        let token = ''; // Store the Bearer token
-        let accountId = ''; // Store the account ID
-        let selectedDomain = ''; // Store the selected domain
-
-        // Function to fetch available domains
-        async function fetchDomains() {
-            try {
-                const response = await fetch(`${apiUrl}/domains`);
-                const data = await response.json();
-                
-                if (data['hydra:member'].length > 0) {
-                    selectedDomain = data['hydra:member'][0].domain;
-                    displayMessage(`Domain selected: ${selectedDomain}`);
-                } else {
-                    displayMessage('No domains available.');
-                }
-            } catch (error) {
-                displayMessage('Error fetching domains: ' + error.message);
-            }
-        }
-
-        // Function to create a temporary email account
-        async function createAccount() {
-            if (!selectedDomain) {
-                displayMessage('Please fetch domains first.');
-                return;
-            }
-
-            // Ensure the email format is correct
-            const email = `user@${selectedDomain}`;
-            const password = 'randompassword'; // Use a static password for demo purposes
-
-            try {
-                const response = await fetch(`${apiUrl}/accounts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ address: email, password })
-                });
-
-                const data = await response.json();
-                
-                if (response.status === 201 && data.id) {
-                    accountId = data.id;
-                    displayMessage(`Account created: ${email}`);
-                    authenticateAccount(data.address, password);  // Authenticate to get the token
-                } else {
-                    displayMessage('Account creation failed: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                displayMessage('Error creating account: ' + error.message);
-            }
-        }
-
-        // Function to authenticate and get token
-        async function authenticateAccount(email, password) {
-            try {
-                const response = await fetch(`${apiUrl}/token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ address: email, password })
-                });
-
-                const data = await response.json();
-                if (data.token) {
-                    token = data.token;
-                    displayMessage('Authenticated! Token: ' + token);
-                } else {
-                    displayMessage('Authentication failed.');
-                }
-            } catch (error) {
-                displayMessage('Error during authentication: ' + error.message);
-            }
-        }
-
-        // Function to get inbox (messages) from the created account
-        async function getMessages() {
-            if (!token) {
-                displayMessage('Please create an account and authenticate first.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiUrl}/messages`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-                if (data['hydra:member'].length > 0) {
-                    displayMessage('Messages received:');
-                    data['hydra:member'].forEach(msg => {
-                        displayMessage(`From: ${msg.from.address}, Subject: ${msg.subject}`);
-                    });
-                } else {
-                    displayMessage('No messages found.');
-                }
-            } catch (error) {
-                displayMessage('Error fetching messages: ' + error.message);
-            }
-        }
-
-        // Function to display messages in the output div
-        function displayMessage(message) {
-            const outputDiv = document.getElementById('output');
-            outputDiv.innerHTML += `<p>${message}</p>`;
-        }
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>
