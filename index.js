@@ -25,9 +25,10 @@ window.onload = () => {
             // Insert account into Supabase database
             const { data, error } = await _supabase
                 .from('users')  // Assuming you have a table named 'users'
-                .insert([
-                    { email: address, password: password }
-                ]);
+                .insert([{
+                    email: address,
+                    password: password
+                }]);
 
             if (error) {
                 displayMessage('Error saving account to database: ' + error.message, 'error');
