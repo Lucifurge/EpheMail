@@ -21,8 +21,11 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
 
         console.log('Available Domain:', domain);
 
-        // Create 10 accounts with a 4.5-second delay between each
-        for (let i = 0; i < 10; i++) {
+        // Create accounts in batches of 8 requests
+        const batchSize = 8;
+        const totalAccounts = 10;
+
+        for (let i = 0; i < totalAccounts; i++) {
             const account = await createAccount(domain);
             accounts.push(account);
 
@@ -32,7 +35,10 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
             accountEntry.className = 'account-item';
             accountBox.appendChild(accountEntry);
 
-            if (i < 9) await delay(4500); // Delay for 4.5 seconds after each account except the last
+            // Check if we need to wait before sending the next batch
+            if ((i + 1) % batchSize === 0 && i + 1 < totalAccounts) {
+                await delay(1000); // Wait for 1 second after every batch of 8
+            }
         }
 
         // Final success message
